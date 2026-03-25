@@ -42,3 +42,11 @@ export function loadHue() {
 export function saveHue(hue) {
   localStorage.setItem('mc-ui-hue', hue)
 }
+
+// UI prefs (compact mode, hide hero)
+export function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem('mc-ui-prefs') || '{}') } catch { return {} }
+}
+export function savePrefs(prefs) {
+  localStorage.setItem('mc-ui-prefs', JSON.stringify(prefs))
+}

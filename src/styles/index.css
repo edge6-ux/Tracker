@@ -389,6 +389,18 @@ body::before {
 }
 .signout-email { font-size: 12px; color: var(--muted-fg); word-break: break-all; font-family: var(--mono); }
 
+/* ── Compact mode ── */
+html[data-compact] .card           { padding: 14px; }
+html[data-compact] .article-card   { padding: 10px 14px; gap: 10px; }
+html[data-compact] .article-title  { font-size: 13px; }
+html[data-compact] .article-thumb  { width: 72px !important; height: 54px !important; }
+html[data-compact] .article-list   { gap: 6px; }
+html[data-compact] .tracker-main   { padding: 16px 20px; }
+html[data-compact] .hero-bento     { grid-template-rows: repeat(3, 88px); }
+
+/* ── Hide hero ── */
+html[data-hide-hero] .hero-bento   { display: none; }
+
 /* ── Responsive ── */
 
 /* iOS Safari: background-attachment: fixed is broken */

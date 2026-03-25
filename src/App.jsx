@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import AuthScreen from './components/AuthScreen'
 import IconSprite from './components/IconSprite'
 import { SvgIcon } from './components/IconSprite'
 import TrackerPage from './pages/TrackerPage'
 import TrackerModal from './components/TrackerModal'
-import { loadHue, saveHue } from './lib/storage'
+import { loadHue, saveHue, loadPrefs, savePrefs } from './lib/storage'
 
 function Shell() {
   const { user, loading, signOut } = useAuth()
@@ -17,6 +17,9 @@ function Shell() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [hue, setHue] = useState(() => loadHue())
+  const [prefs, setPrefs] = useState(() => loadPrefs())
+  const [customizeOpen, setCustomizeOpen] = useState(false)
+  const customizeRef = useRef(null)
   const [showHome, setShowHome] = useState(false)
   const [showSaved, setShowSaved] = useState(false)
   const [homeKey, setHomeKey] = useState(0)
@@ -25,6 +28,22 @@ function Shell() {
     document.documentElement.setAttribute('data-hue', hue)
     saveHue(hue)
   }, [hue])
+
+  useEffect(() => {
+    const html = document.documentElement
+    prefs.compact ? html.setAttribute('data-compact', '') : html.removeAttribute('data-compact')
+    prefs.hideHero ? html.setAttribute('data-hide-hero', '') : html.removeAttribute('data-hide-hero')
+    savePrefs(prefs)
+  }, [prefs])
+
+  const togglePref = key => setPrefs(p => ({ ...p, [key]: !p[key] }))
+
+  useEffect(() => {
+    if (!customizeOpen) return
+    const handler = e => { if (customizeRef.current && !customizeRef.current.contains(e.target)) setCustomizeOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [customizeOpen])
 
   // Close auth modal when user signs in
   useEffect(() => {
@@ -83,22 +102,83 @@ function Shell() {
             Saved
           </button>
 
-          {/* Hue picker */}
-          <div className="topbar-hue" style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {hues.map(h => (
-              <button
-                key={h}
-                onClick={() => setHue(h)}
-                title={h}
+          {/* Customize button */}
+          <div ref={customizeRef} style={{ position: 'relative' }}>
+            <button
+              className={`btn btn-sm${customizeOpen ? ' btn-primary' : ''}`}
+              onClick={() => setCustomizeOpen(o => !o)}
+              title="Customize"
+            >
+              <SvgIcon id="ico-sliders" size={13} />
+              Customize
+            </button>
+            {customizeOpen && (
+              <div
                 style={{
-                  width: 14, height: 14, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
-                  background: h === 'purple' ? '#b9a9ff' : h === 'blue' ? '#60b4ff' : h === 'green' ? '#4affaa' : h === 'red' ? '#ff6e7f' : h === 'orange' ? '#ffa050' : h === 'pink' ? '#ff78c8' : h === 'yellow' ? '#ffdc50' : '#d2daf0',
-                  boxShadow: hue === h ? `0 0 0 2px var(--bg), 0 0 0 3px ${h === 'purple' ? '#b9a9ff' : 'currentColor'}` : 'none',
-                  opacity: hue === h ? 1 : 0.5,
-                  transition: 'all 0.15s ease'
+                  position: 'absolute', top: 'calc(100% + 10px)', right: 0,
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
+                  borderRadius: 'var(--radius-lg)', padding: '20px', width: 260,
+                  boxShadow: 'var(--shadow-lg)', zIndex: 200, animation: 'slideModal 0.2s ease',
                 }}
-              />
-            ))}
+              >
+                {/* Tagline */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: 'var(--text-strong)', letterSpacing: '-0.02em' }}>Your tracker, your way.</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 3 }}>Personalise the look and feel.</div>
+                </div>
+
+                {/* Accent colour */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Accent colour</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                    {hues.map(h => {
+                      const color = h === 'purple' ? '#b9a9ff' : h === 'blue' ? '#60b4ff' : h === 'green' ? '#4affaa' : h === 'red' ? '#ff6e7f' : h === 'orange' ? '#ffa050' : h === 'pink' ? '#ff78c8' : h === 'yellow' ? '#ffdc50' : '#d2daf0'
+                      return (
+                        <button key={h} onClick={() => setHue(h)} title={h} style={{
+                          width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
+                          background: color,
+                          boxShadow: hue === h ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${color}` : 'none',
+                          opacity: hue === h ? 1 : 0.45,
+                          transition: 'all 0.15s ease',
+                        }} />
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Display</div>
+                  {[
+                    { key: 'compact', label: 'Compact mode', sub: 'Tighter spacing throughout' },
+                    { key: 'hideHero', label: 'Show article list only', sub: 'Hides the hero image section' },
+                  ].map(({ key, label, sub }) => (
+                    <button key={key} onClick={() => togglePref(key)} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0',
+                      borderBottom: '1px solid var(--border)', width: '100%', textAlign: 'left',
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-strong)' }}>{label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 1 }}>{sub}</div>
+                      </div>
+                      {/* Toggle pill */}
+                      <div style={{
+                        width: 36, height: 20, borderRadius: 10, flexShrink: 0, marginLeft: 12,
+                        background: prefs[key] ? 'var(--accent)' : 'var(--border-strong)',
+                        position: 'relative', transition: 'background 0.2s ease',
+                      }}>
+                        <div style={{
+                          position: 'absolute', top: 3, left: prefs[key] ? 19 : 3,
+                          width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                          transition: 'left 0.2s ease',
+                        }} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Avatar / sign-out (logged in) or Sign In button (guest) */}

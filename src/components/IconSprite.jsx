@@ -15,6 +15,7 @@ export default function IconSprite() {
         <symbol id="ico-bookmark" viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 011 1v16.5a.5.5 0 01-.75.43L12 17l-7.25 3.93A.5.5 0 014 20.5V4a1 1 0 011-1Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></symbol>
         <symbol id="ico-bookmark-fill" viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 011 1v16.5a.5.5 0 01-.75.43L12 17l-7.25 3.93A.5.5 0 014 20.5V4a1 1 0 011-1Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></symbol>
         <symbol id="ico-sort" viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></symbol>
+        <symbol id="ico-sliders" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="9" cy="6" r="2" fill="var(--bg)" stroke="currentColor" strokeWidth="1.5"/><circle cx="15" cy="12" r="2" fill="var(--bg)" stroke="currentColor" strokeWidth="1.5"/><circle cx="9" cy="18" r="2" fill="var(--bg)" stroke="currentColor" strokeWidth="1.5"/></symbol>
       </defs>
     </svg>
   )
