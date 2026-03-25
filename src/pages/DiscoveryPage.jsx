@@ -16,7 +16,9 @@ const HOME_KEYWORDS = ['breaking news', 'world news', 'technology', 'business']
 
 // Outlets that provide real thumbnails in their RSS feeds
 const HERO_FEEDS = [
-  { url: 'https://feeds.skynews.com/feeds/rss/home.xml', source: 'Sky News', domain: 'skynews.com' },
+  { url: 'https://feeds.skynews.com/feeds/rss/home.xml',      source: 'Sky News',    domain: 'skynews.com' },
+  { url: 'http://feeds.bbci.co.uk/news/rss.xml',              source: 'BBC News',    domain: 'bbc.com' },
+  { url: 'https://www.theguardian.com/world/rss',             source: 'The Guardian',domain: 'theguardian.com' },
 ]
 
 const KNOWN_DOMAINS = {
@@ -49,6 +51,8 @@ function parseRSSText(text) {
     }
     const thumbnail = (
       chunk.match(/media:thumbnail[^>]+url=["']([^"']+)["']/i)?.[1] ||
+      chunk.match(/media:content[^>]+url=["']([^"']+)["'][^>]*medium=["']image["']/i)?.[1] ||
+      chunk.match(/media:content[^>]+medium=["']image["'][^>]*url=["']([^"']+)["']/i)?.[1] ||
       chunk.match(/enclosure[^>]+type=["']image\/[^"']*["'][^>]*url=["']([^"']+)["']/i)?.[1] ||
       chunk.match(/enclosure[^>]+url=["']([^"']+)["'][^>]*type=["']image\/[^"']*["']/i)?.[1] ||
       chunk.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1] || ''
@@ -87,6 +91,7 @@ async function fetchHero() {
       const items = await rss2json(feed.url)
       return items
         .filter(item => item.thumbnail?.startsWith?.('http'))
+        .slice(0, 6)
         .map(item => ({
           id: 'hero-' + Math.random().toString(36).slice(2),
           title: item.title || '',
@@ -98,11 +103,21 @@ async function fetchHero() {
         }))
     })
   )
-  const all = []
-  results.forEach(r => { if (r.status === 'fulfilled') all.push(...r.value) })
-  // Sort newest first and take top 4
-  all.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
-  return all.slice(0, 4)
+  // Round-robin across sources so each outlet gets equal representation
+  const pools = results.filter(r => r.status === 'fulfilled').map(r => [...r.value])
+  const seen = new Set()
+  const balanced = []
+  let i = 0
+  while (balanced.length < 4 && pools.some(p => p.length > 0)) {
+    const pool = pools[i % pools.length]
+    if (pool.length > 0) {
+      const article = pool.shift()
+      const key = article.title.toLowerCase().trim()
+      if (!seen.has(key)) { seen.add(key); balanced.push(article) }
+    }
+    i++
+  }
+  return balanced
 }
 
 async function fetchTopicHero(topicId) {
