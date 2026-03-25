@@ -41,6 +41,12 @@ function extractThumbnail(item) {
   return m?.[1]?.startsWith('http') ? m[1] : ''
 }
 
+function decodeEntities(str) {
+  const ta = document.createElement('textarea')
+  ta.innerHTML = str
+  return ta.value
+}
+
 function parseRSSText(text) {
   const items = text.match(/<item[\s>][\s\S]*?<\/item>/gi) || []
   return items.map(chunk => {
@@ -60,7 +66,7 @@ function parseRSSText(text) {
     const enclosureType = chunk.match(/enclosure[^>]+type=["']([^"']+)["']/i)?.[1] || ''
     const enclosureLink = chunk.match(/enclosure[^>]+url=["']([^"']+)["']/i)?.[1] || ''
     return {
-      title: get('title'),
+      title: decodeEntities(get('title')),
       link: chunk.match(/<link>([^<]+)<\/link>/i)?.[1]?.trim() || chunk.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1] || '',
       pubDate: get('pubDate'),
       thumbnail: thumbnail?.startsWith('http') ? thumbnail : '',
