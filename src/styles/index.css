@@ -347,7 +347,7 @@ body::before {
 .hero-bento {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: repeat(3, 130px);
+  grid-template-rows: repeat(2, 200px);
   gap: 8px;
 }
 .hero-bento > *:first-child {
@@ -431,7 +431,7 @@ html[data-compact] .article-title  { font-size: 13px; }
 html[data-compact] .article-thumb  { width: 72px !important; height: 54px !important; }
 html[data-compact] .article-list   { gap: 6px; }
 html[data-compact] .tracker-main   { padding: 16px 20px; }
-html[data-compact] .hero-bento     { grid-template-rows: repeat(3, 105px); }
+html[data-compact] .hero-bento     { grid-template-rows: repeat(2, 160px); }
 
 /* ── Hide hero ── */
 html[data-hide-hero] .hero-bento   { display: none; }
