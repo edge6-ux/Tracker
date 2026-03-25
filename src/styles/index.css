@@ -228,7 +228,7 @@ body::before {
   display: flex; align-items: center; gap: 10px;
   text-shadow: 0 0 40px rgba(var(--accent-rgb), 0.15);
 }
-.section-sub { font-size: 13px; color: var(--muted-fg); margin-top: 2px; }
+.section-sub { font-size: 13px; color: #9f9fbb; margin-top: 2px; }
 
 /* ── Cards ── */
 .card {
