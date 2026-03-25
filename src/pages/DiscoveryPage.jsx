@@ -16,8 +16,9 @@ const HOME_KEYWORDS = ['breaking news', 'world news', 'technology', 'business']
 
 // Outlets that provide real thumbnails in their RSS feeds
 const HERO_FEEDS = [
-  { url: 'https://moxie.foxnews.com/google-publisher/latest.xml', source: 'Fox News', domain: 'foxnews.com' },
-  { url: 'https://feeds.skynews.com/feeds/rss/home.xml',          source: 'Sky News', domain: 'skynews.com' },
+  { url: 'https://moxie.foxnews.com/google-publisher/latest.xml', source: 'Fox News', domain: 'foxnews.com', slots: 2 },
+  { url: 'https://feeds.skynews.com/feeds/rss/home.xml',          source: 'Sky News', domain: 'skynews.com', slots: 1 },
+  { url: 'http://rss.cnn.com/rss/cnn_topstories.rss',             source: 'CNN',      domain: 'cnn.com',     slots: 1 },
 ]
 
 const KNOWN_DOMAINS = {
@@ -109,20 +110,19 @@ async function fetchHero() {
         }))
     })
   )
-  // Round-robin across sources so each outlet gets equal representation
-  const pools = results.filter(r => r.status === 'fulfilled').map(r => [...r.value])
+  // Take the allotted slots from each source in order
   const seen = new Set()
   const balanced = []
-  let i = 0
-  while (balanced.length < 4 && pools.some(p => p.length > 0)) {
-    const pool = pools[i % pools.length]
-    if (pool.length > 0) {
-      const article = pool.shift()
+  results.forEach((r, i) => {
+    if (r.status !== 'fulfilled') return
+    const slots = HERO_FEEDS[i].slots || 1
+    let taken = 0
+    for (const article of r.value) {
+      if (taken >= slots) break
       const key = article.title.toLowerCase().trim()
-      if (!seen.has(key)) { seen.add(key); balanced.push(article) }
+      if (!seen.has(key)) { seen.add(key); balanced.push(article); taken++ }
     }
-    i++
-  }
+  })
   return balanced
 }
 
