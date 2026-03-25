@@ -142,7 +142,21 @@ function Shell() {
       {/* Topbar */}
       <div className="tracker-topbar">
         <button className="tracker-topbar-brand" onClick={() => { setShowHome(true); setShowSaved(false); setHomeKey(k => k + 1) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          <img src="/tracker2.png" alt="Tracker" style={{ height: 36, width: 'auto', display: 'block' }} />
+          <div className="tracker-topbar-logo">
+            <div style={{
+              width: 44, height: 44,
+              background: 'var(--accent)',
+              WebkitMaskImage: 'url(/tracker1.png)',
+              WebkitMaskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskImage: 'url(/tracker1.png)',
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'center',
+            }} />
+          </div>
+          <span className="tracker-topbar-title">Tracker</span>
         </button>
         <div className="tracker-topbar-right">
           {/* My Trackers nav */}
