@@ -347,7 +347,8 @@ body::before {
 .hero-bento {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-template-rows: repeat(3, 110px);
+  grid-template-rows: repeat(3, 1fr);
+  aspect-ratio: 23/10;
   gap: 8px;
 }
 .hero-bento > *:first-child {
