@@ -17,7 +17,6 @@ const HOME_KEYWORDS = ['breaking news', 'world news', 'technology', 'business']
 // Outlets that provide real thumbnails in their RSS feeds
 const HERO_FEEDS = [
   { url: 'https://feeds.skynews.com/feeds/rss/home.xml',      source: 'Sky News',    domain: 'skynews.com' },
-  { url: 'http://feeds.bbci.co.uk/news/rss.xml',              source: 'BBC News',    domain: 'bbc.com' },
   { url: 'https://www.theguardian.com/world/rss',             source: 'The Guardian',domain: 'theguardian.com' },
 ]
 
