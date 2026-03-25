@@ -268,17 +268,22 @@ function Shell() {
       {!user && !bannerDismissed && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 20px', background: 'var(--accent-subtle)',
-          borderBottom: '1px solid var(--border)', fontSize: 13, gap: 12
+          padding: '10px 20px',
+          background: 'rgba(0,0,0,0.45)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--border-strong)',
+          borderLeft: '3px solid var(--accent)',
+          fontSize: 13, gap: 12
         }}>
-          <span style={{ color: 'var(--text)' }}>
+          <span style={{ color: 'var(--text-strong)', fontWeight: 500 }}>
             Create a free account to save your trackers across devices.
           </span>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button className="btn btn-primary btn-sm" onClick={() => setAuthModalOpen(true)}>Create Account</button>
             <button
               onClick={() => setBannerDismissed(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '2px 4px', fontSize: 16, lineHeight: 1 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-fg)', padding: '2px 4px', fontSize: 16, lineHeight: 1 }}
               title="Dismiss"
             >×</button>
           </div>
