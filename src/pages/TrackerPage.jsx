@@ -98,7 +98,7 @@ const normalizeSource = (raw) => {
 const AUTO_REFRESH_OPTIONS = [0, 15, 30, 60]
 
 export default function TrackerPage({ ctx }) {
-  const { toast, setTrackerModalOpen, setEditingTrackerId, user, showHome, setShowHome, showSaved } = ctx
+  const { toast, setTrackerModalOpen, setEditingTrackerId, user, showHome, setShowHome, showSaved, newTrackerId, setNewTrackerId } = ctx
   const [activeTrackerId, setActiveTrackerId] = useState(null)
   const [fetching, setFetching] = useState(false)
   const [keywordFilters, setKeywordFilters] = useState(new Set())
@@ -145,6 +145,15 @@ export default function TrackerPage({ ctx }) {
     return () => clearInterval(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefreshMins, trackerId])
+
+  // Auto-fetch articles when a new tracker is created
+  useEffect(() => {
+    if (!newTrackerId) return
+    setActiveTrackerId(newTrackerId)
+    setNewTrackerId(null)
+    fetchArticlesRef.current?.(newTrackerId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newTrackerId])
 
   const cycleAutoRefresh = () => {
     const idx = AUTO_REFRESH_OPTIONS.indexOf(autoRefreshMins)
@@ -413,7 +422,6 @@ export default function TrackerPage({ ctx }) {
                             <div className="article-source">{a.source || 'Web'}</div>
                           </div>
                           <div className="article-title" style={{ paddingRight: a.thumbnail ? 0 : 28 }}>{a.title}</div>
-                          {a.snippet && <div className="article-snippet">{a.snippet}</div>}
                           <div className="article-time">{a.keyword} · {a.publishedAt ? getTimeAgo(a.publishedAt) : ''}</div>
                         </div>
                         <TrackerThumbnail src={a.thumbnail} />

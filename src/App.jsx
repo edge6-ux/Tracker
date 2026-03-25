@@ -23,6 +23,7 @@ function Shell() {
   const [showHome, setShowHome] = useState(false)
   const [showSaved, setShowSaved] = useState(false)
   const [homeKey, setHomeKey] = useState(0)
+  const [newTrackerId, setNewTrackerId] = useState(null)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-hue', hue)
@@ -64,7 +65,7 @@ function Shell() {
     )
   }
 
-  const ctx = { user, toast, setTrackerModalOpen, setEditingTrackerId, initialKeyword, setInitialKeyword, showHome, setShowHome, showSaved, setShowSaved, homeKey }
+  const ctx = { user, toast, setTrackerModalOpen, setEditingTrackerId, initialKeyword, setInitialKeyword, showHome, setShowHome, showSaved, setShowSaved, homeKey, newTrackerId, setNewTrackerId }
 
   const hues = ['purple', 'blue', 'green', 'red', 'orange', 'pink', 'yellow', 'white']
 
@@ -92,6 +93,16 @@ function Shell() {
           <span className="tracker-topbar-title">Tracker</span>
         </button>
         <div className="tracker-topbar-right">
+          {/* My Trackers nav */}
+          <button
+            className={`btn btn-sm${!showHome && !showSaved ? ' btn-primary' : ''}`}
+            onClick={() => { setShowHome(false); setShowSaved(false) }}
+            style={{ gap: 5 }}
+          >
+            <SvgIcon id="ico-rss" size={14} />
+            My Trackers
+          </button>
+
           {/* Saved nav */}
           <button
             className={`btn btn-sm${showSaved ? ' btn-primary' : ''}`}

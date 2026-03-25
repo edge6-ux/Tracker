@@ -4,7 +4,7 @@ import { loadTrackers, saveTrackers } from '../lib/storage'
 import { supabase } from '../lib/supabase'
 
 export default function TrackerModal({ ctx }) {
-  const { setTrackerModalOpen, editingTrackerId, setEditingTrackerId, initialKeyword, setInitialKeyword, toast, user, setShowHome } = ctx
+  const { setTrackerModalOpen, editingTrackerId, setEditingTrackerId, initialKeyword, setInitialKeyword, toast, user, setShowHome, setNewTrackerId } = ctx
 
   const [name, setName] = useState('')
   const [keywords, setKeywords] = useState('')
@@ -72,6 +72,7 @@ export default function TrackerModal({ ctx }) {
     setShowHome?.(false)
     close()
     toast(isEdit ? 'Tracker updated!' : 'Tracker created!', 'success')
+    if (!isEdit) setNewTrackerId?.(trackerId)
   }
 
   return (
