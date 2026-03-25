@@ -146,11 +146,11 @@ function Shell() {
             <div style={{
               width: 44, height: 44,
               background: 'var(--accent)',
-              WebkitMaskImage: 'url(/tracker2.png)',
+              WebkitMaskImage: 'url(/tracker1.png)',
               WebkitMaskSize: 'contain',
               WebkitMaskRepeat: 'no-repeat',
               WebkitMaskPosition: 'center',
-              maskImage: 'url(/tracker2.png)',
+              maskImage: 'url(/tracker1.png)',
               maskSize: 'contain',
               maskRepeat: 'no-repeat',
               maskPosition: 'center',
