@@ -17,7 +17,7 @@ const HOME_KEYWORDS = ['breaking news', 'world news', 'technology', 'business']
 // Outlets that provide real thumbnails in their RSS feeds
 const HERO_FEEDS = [
   { url: 'https://feeds.skynews.com/feeds/rss/home.xml',      source: 'Sky News',    domain: 'skynews.com' },
-  { url: 'https://www.theguardian.com/world/rss',             source: 'The Guardian',domain: 'theguardian.com' },
+  { url: 'https://www.theguardian.com/international/rss',     source: 'The Guardian',domain: 'theguardian.com' },
 ]
 
 const KNOWN_DOMAINS = {
@@ -50,6 +50,7 @@ function parseRSSText(text) {
     }
     const thumbnail = (
       chunk.match(/media:thumbnail[^>]+url=["']([^"']+)["']/i)?.[1] ||
+      chunk.match(/media:content[^>]+url=["']([^"']+\.(?:jpg|jpeg|png|webp)[^"']*?)["']/i)?.[1] ||
       chunk.match(/media:content[^>]+url=["']([^"']+)["'][^>]*medium=["']image["']/i)?.[1] ||
       chunk.match(/media:content[^>]+medium=["']image["'][^>]*url=["']([^"']+)["']/i)?.[1] ||
       chunk.match(/enclosure[^>]+type=["']image\/[^"']*["'][^>]*url=["']([^"']+)["']/i)?.[1] ||
