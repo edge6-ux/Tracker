@@ -44,18 +44,13 @@ function parseRSSItems(text) {
 
 async function fetchRSS(feedUrl) {
   try {
-    const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`, { signal: AbortSignal.timeout(15000) })
+    const res = await fetch(`/api/rss?url=${encodeURIComponent(feedUrl)}`, { signal: AbortSignal.timeout(15000) })
     if (res.ok) {
       const items = parseRSSItems(await res.text())
       if (items.length > 0) return items
     }
   } catch { /* fall through */ }
-  try {
-    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=10`, { signal: AbortSignal.timeout(12000) })
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.status === 'ok' && Array.isArray(data.items) ? data.items : []
-  } catch { return [] }
+  return []
 }
 
 const SOURCE_NORM = {
