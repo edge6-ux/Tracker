@@ -439,10 +439,16 @@ html[data-hide-hero] .hero-bento   { display: none; }
 }
 
 /* ── 600px: compact topbar, hide hue picker ── */
+.topbar-mobile-only { display: none; }
+
 @media (max-width: 600px) {
   .topbar-hue { display: none !important; }
   .tracker-topbar-title { font-size: 14px; }
   .tracker-topbar { height: 48px; }
+  .tracker-topbar-right { gap: 6px; }
+  .topbar-label { display: none; }
+  .topbar-desktop-only { display: none !important; }
+  .topbar-mobile-only { display: block; }
   .toast-container {
     right: 12px !important;
     bottom: 12px !important;

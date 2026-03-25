@@ -7,6 +7,63 @@ import TrackerPage from './pages/TrackerPage'
 import TrackerModal from './components/TrackerModal'
 import { loadHue, saveHue, loadPrefs, savePrefs } from './lib/storage'
 
+function CustomizePanel({ hues, hue, setHue, prefs, togglePref }) {
+  return (
+    <>
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: 'var(--text-strong)', letterSpacing: '-0.02em' }}>Your tracker, your way.</div>
+        <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 3 }}>Personalise the look and feel.</div>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Accent colour</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+          {hues.map(h => {
+            const color = h === 'purple' ? '#b9a9ff' : h === 'blue' ? '#60b4ff' : h === 'green' ? '#4affaa' : h === 'red' ? '#ff6e7f' : h === 'orange' ? '#ffa050' : h === 'pink' ? '#ff78c8' : h === 'yellow' ? '#ffdc50' : '#d2daf0'
+            return (
+              <button key={h} onClick={() => setHue(h)} title={h} style={{
+                width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
+                background: color,
+                boxShadow: hue === h ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${color}` : 'none',
+                opacity: hue === h ? 1 : 0.45,
+                transition: 'all 0.15s ease',
+              }} />
+            )
+          })}
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Display</div>
+        {[
+          { key: 'compact', label: 'Compact mode', sub: 'Tighter spacing throughout' },
+          { key: 'hideHero', label: 'Show article list only', sub: 'Hides the hero image section' },
+        ].map(({ key, label, sub }) => (
+          <button key={key} onClick={() => togglePref(key)} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0',
+            borderBottom: '1px solid var(--border)', width: '100%', textAlign: 'left',
+          }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-strong)' }}>{label}</div>
+              <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 1 }}>{sub}</div>
+            </div>
+            <div style={{
+              width: 36, height: 20, borderRadius: 10, flexShrink: 0, marginLeft: 12,
+              background: prefs[key] ? 'var(--accent)' : 'var(--border-strong)',
+              position: 'relative', transition: 'background 0.2s ease',
+            }}>
+              <div style={{
+                position: 'absolute', top: 3, left: prefs[key] ? 19 : 3,
+                width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                transition: 'left 0.2s ease',
+              }} />
+            </div>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
 function Shell() {
   const { user, loading, signOut } = useAuth()
   const [trackerModalOpen, setTrackerModalOpen] = useState(false)
@@ -20,6 +77,8 @@ function Shell() {
   const [prefs, setPrefs] = useState(() => loadPrefs())
   const [customizeOpen, setCustomizeOpen] = useState(false)
   const customizeRef = useRef(null)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef(null)
   const [showHome, setShowHome] = useState(false)
   const [showSaved, setShowSaved] = useState(false)
   const [homeKey, setHomeKey] = useState(0)
@@ -45,6 +104,13 @@ function Shell() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [customizeOpen])
+
+  useEffect(() => {
+    if (!moreOpen) return
+    const handler = e => { if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [moreOpen])
 
   // Close auth modal when user signs in
   useEffect(() => {
@@ -100,7 +166,7 @@ function Shell() {
             style={{ gap: 5 }}
           >
             <SvgIcon id="ico-rss" size={14} />
-            My Trackers
+            <span className="topbar-label">My Trackers</span>
           </button>
 
           {/* Saved nav */}
@@ -110,11 +176,11 @@ function Shell() {
             style={{ gap: 5 }}
           >
             <SvgIcon id={showSaved ? 'ico-bookmark-fill' : 'ico-bookmark'} size={14} />
-            Saved
+            <span className="topbar-label">Saved</span>
           </button>
 
-          {/* Customize button */}
-          <div ref={customizeRef} style={{ position: 'relative' }}>
+          {/* Customize button — desktop only */}
+          <div ref={customizeRef} style={{ position: 'relative' }} className="topbar-desktop-only">
             <button
               className={`btn btn-sm${customizeOpen ? ' btn-primary' : ''}`}
               onClick={() => setCustomizeOpen(o => !o)}
@@ -132,86 +198,69 @@ function Shell() {
                   boxShadow: 'var(--shadow-lg)', zIndex: 200, animation: 'slideModal 0.2s ease',
                 }}
               >
-                {/* Tagline */}
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: 'var(--text-strong)', letterSpacing: '-0.02em' }}>Your tracker, your way.</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 3 }}>Personalise the look and feel.</div>
-                </div>
-
-                {/* Accent colour */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Accent colour</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                    {hues.map(h => {
-                      const color = h === 'purple' ? '#b9a9ff' : h === 'blue' ? '#60b4ff' : h === 'green' ? '#4affaa' : h === 'red' ? '#ff6e7f' : h === 'orange' ? '#ffa050' : h === 'pink' ? '#ff78c8' : h === 'yellow' ? '#ffdc50' : '#d2daf0'
-                      return (
-                        <button key={h} onClick={() => setHue(h)} title={h} style={{
-                          width: 22, height: 22, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0,
-                          background: color,
-                          boxShadow: hue === h ? `0 0 0 2px var(--bg-elevated), 0 0 0 3.5px ${color}` : 'none',
-                          opacity: hue === h ? 1 : 0.45,
-                          transition: 'all 0.15s ease',
-                        }} />
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Toggles */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Display</div>
-                  {[
-                    { key: 'compact', label: 'Compact mode', sub: 'Tighter spacing throughout' },
-                    { key: 'hideHero', label: 'Show article list only', sub: 'Hides the hero image section' },
-                  ].map(({ key, label, sub }) => (
-                    <button key={key} onClick={() => togglePref(key)} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0',
-                      borderBottom: '1px solid var(--border)', width: '100%', textAlign: 'left',
-                    }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-strong)' }}>{label}</div>
-                        <div style={{ fontSize: 11, color: 'var(--muted-fg)', marginTop: 1 }}>{sub}</div>
-                      </div>
-                      {/* Toggle pill */}
-                      <div style={{
-                        width: 36, height: 20, borderRadius: 10, flexShrink: 0, marginLeft: 12,
-                        background: prefs[key] ? 'var(--accent)' : 'var(--border-strong)',
-                        position: 'relative', transition: 'background 0.2s ease',
-                      }}>
-                        <div style={{
-                          position: 'absolute', top: 3, left: prefs[key] ? 19 : 3,
-                          width: 14, height: 14, borderRadius: '50%', background: '#fff',
-                          transition: 'left 0.2s ease',
-                        }} />
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <CustomizePanel hues={hues} hue={hue} setHue={setHue} prefs={prefs} togglePref={togglePref} />
               </div>
             )}
           </div>
 
-          {/* Avatar / sign-out (logged in) or Sign In button (guest) */}
-          {user ? (
-            <div className="topbar-avatar-wrap">
-              <div className="topbar-avatar" onClick={() => setAvatarOpen(o => !o)}>
-                {user.email?.[0]?.toUpperCase() || '?'}
-              </div>
-              {avatarOpen && (
-                <div className="signout-popover" onClick={() => setAvatarOpen(false)}>
-                  <div className="signout-email">{user.email}</div>
-                  <button className="btn btn-sm btn-danger" style={{ width: '100%', justifyContent: 'center' }} onClick={signOut}>
-                    Sign Out
-                  </button>
+          {/* Avatar / sign-out — desktop only */}
+          <div className="topbar-desktop-only">
+            {user ? (
+              <div className="topbar-avatar-wrap">
+                <div className="topbar-avatar" onClick={() => setAvatarOpen(o => !o)}>
+                  {user.email?.[0]?.toUpperCase() || '?'}
                 </div>
-              )}
-            </div>
-          ) : (
-            <button className="btn btn-primary btn-sm" onClick={() => setAuthModalOpen(true)}>
-              Sign In
+                {avatarOpen && (
+                  <div className="signout-popover" onClick={() => setAvatarOpen(false)}>
+                    <div className="signout-email">{user.email}</div>
+                    <button className="btn btn-sm btn-danger" style={{ width: '100%', justifyContent: 'center' }} onClick={signOut}>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="btn btn-primary btn-sm" onClick={() => setAuthModalOpen(true)}>
+                Sign In
+              </button>
+            )}
+          </div>
+
+          {/* ⋯ More button — mobile only */}
+          <div ref={moreRef} style={{ position: 'relative' }} className="topbar-mobile-only">
+            <button
+              className={`btn btn-sm${moreOpen ? ' btn-primary' : ''}`}
+              onClick={() => setMoreOpen(o => !o)}
+              title="More"
+              style={{ padding: '0 10px', fontSize: 18, letterSpacing: 1 }}
+            >
+              ···
             </button>
-          )}
+            {moreOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 10px)', right: 0,
+                background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)',
+                borderRadius: 'var(--radius-lg)', padding: '20px', width: 260,
+                boxShadow: 'var(--shadow-lg)', zIndex: 200, animation: 'slideModal 0.2s ease',
+              }}>
+                <CustomizePanel hues={hues} hue={hue} setHue={setHue} prefs={prefs} togglePref={togglePref} />
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 16 }}>
+                  {user ? (
+                    <>
+                      <div style={{ fontSize: 12, color: 'var(--muted-fg)', marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+                      <button className="btn btn-sm btn-danger" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { signOut(); setMoreOpen(false) }}>
+                        Sign Out
+                      </button>
+                    </>
+                  ) : (
+                    <button className="btn btn-primary btn-sm" style={{ width: '100%', justifyContent: 'center' }} onClick={() => { setAuthModalOpen(true); setMoreOpen(false) }}>
+                      Sign In
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
