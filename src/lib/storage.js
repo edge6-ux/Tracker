@@ -37,7 +37,7 @@ export function loadHue() {
   const key = 'mc-ui-hue'
   const allowed = new Set(['purple', 'red', 'blue', 'orange', 'pink', 'green', 'white', 'yellow'])
   const saved = localStorage.getItem(key)
-  return (saved && allowed.has(saved)) ? saved : 'purple'
+  return (saved && allowed.has(saved)) ? saved : 'blue'
 }
 export function saveHue(hue) {
   localStorage.setItem('mc-ui-hue', hue)
