@@ -209,7 +209,7 @@ function HeroCard({ article, featured }) {
       {!imgFailed && (
         <img
           src={article.thumbnail} alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }}
           onError={() => setImgFailed(true)}
         />
       )}
