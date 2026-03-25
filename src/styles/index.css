@@ -361,18 +361,18 @@ body::before {
 
 @media (max-width: 600px) {
   .hero-bento {
-    grid-template-columns: 1fr;
-    grid-template-rows: 220px 95px 95px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 200px 130px;
     aspect-ratio: unset;
     gap: 6px;
   }
   .hero-bento > *:first-child {
-    grid-column: 1;
+    grid-column: 1 / span 2;
     grid-row: 1;
   }
   .hero-bento > *:not(:first-child) {
-    grid-column: 1;
-    grid-row: unset;
+    grid-column: unset;
+    grid-row: 2;
   }
   /* Hide 4th card on mobile — 3 is enough */
   .hero-bento > *:nth-child(4) {
