@@ -202,7 +202,7 @@ function HeroCard({ article, featured }) {
       rel="noopener noreferrer"
       style={{
         position: 'relative', borderRadius: 10, overflow: 'hidden', display: 'block',
-        textDecoration: 'none', height: '100%', minHeight: featured ? 240 : 100,
+        textDecoration: 'none', height: '100%',
         background: 'var(--bg-hover)', border: '1px solid var(--border)',
       }}
     >
