@@ -149,8 +149,8 @@ html[data-hue="yellow"] {
 body {
   background-color: #000000;
   background-image:
-    radial-gradient(ellipse 85% 85% at 0% 0%, var(--bg-grad-bright) 0%, var(--bg-grad-deep) 20%, var(--bg-grad-dark) 48%, transparent 70%),
-    radial-gradient(ellipse 42% 42% at 1% 1%, var(--bg-grad-hi) 0%, transparent 48%);
+    radial-gradient(ellipse 115% 115% at 0% 0%, var(--bg-grad-bright) 0%, var(--bg-grad-deep) 28%, var(--bg-grad-dark) 58%, transparent 82%),
+    radial-gradient(ellipse 58% 58% at 1% 1%, var(--bg-grad-hi) 0%, transparent 55%);
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
