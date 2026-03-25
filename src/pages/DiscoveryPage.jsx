@@ -135,9 +135,7 @@ async function fetchForKeyword(keyword) {
     let source = '', cleanTitle = title
     const dashIdx = title.lastIndexOf(' - ')
     if (dashIdx > 0) { source = title.slice(dashIdx + 3).trim(); cleanTitle = title.slice(0, dashIdx).trim() }
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = item.description || ''
-    const snippet = (tempDiv.textContent || '').replace(/<[^>]*>/g, '').replace(/&[#a-z][a-z0-9]*;/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)
+    const snippet = ''
     return {
       id: 'art-' + Math.random().toString(36).slice(2),
       title: cleanTitle, source, snippet,
@@ -158,12 +156,14 @@ async function fetchHomeFeed() {
     if (seen.has(k)) return false
     seen.add(k); return true
   })
-  deduped.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0))
+  deduped.sort((a, b) => {
+    const score = a => (a.thumbnail ? 2 : 0) + (a.snippet?.length > 30 ? 1 : 0)
+    return (score(b) - score(a)) || ((b.publishedAt || 0) - (a.publishedAt || 0))
+  })
   return deduped
 }
 
-// A single hero card — image fills the card, text sits over a dark gradient
-function HeroCard({ article, large }) {
+function HeroCard({ article, featured }) {
   const [imgFailed, setImgFailed] = useState(false)
   return (
     <a
@@ -171,9 +171,9 @@ function HeroCard({ article, large }) {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        position: 'relative', borderRadius: 12, overflow: 'hidden', display: 'block',
-        textDecoration: 'none', height: large ? 300 : 140,
-        background: 'var(--bg-hover)', border: '1px solid var(--border)', flexShrink: 0,
+        position: 'relative', borderRadius: 10, overflow: 'hidden', display: 'block',
+        textDecoration: 'none', height: '100%', minHeight: featured ? 240 : 100,
+        background: 'var(--bg-hover)', border: '1px solid var(--border)',
       }}
     >
       {!imgFailed && (
@@ -183,27 +183,21 @@ function HeroCard({ article, large }) {
           onError={() => setImgFailed(true)}
         />
       )}
-      {/* Gradient overlay */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 100%)',
+        background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)',
       }} />
-      {/* Text */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: large ? '18px 18px' : '10px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: large ? 6 : 4 }}>
-          <img
-            src={article.favicon} alt=""
-            style={{ width: 13, height: 13, borderRadius: 2, opacity: 0.85 }}
-            onError={e => { e.target.style.display = 'none' }}
-          />
-          <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11, fontWeight: 500 }}>{article.source}</span>
-          <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>· {getTimeAgo(article.publishedAt)}</span>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: featured ? '16px' : '10px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+          <img src={article.favicon} alt="" style={{ width: 12, height: 12, borderRadius: 2, opacity: 0.8 }} onError={e => { e.target.style.display = 'none' }} />
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: 500 }}>{article.source}</span>
+          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>· {getTimeAgo(article.publishedAt)}</span>
         </div>
         <div style={{
           color: '#fff', fontFamily: 'var(--font-display)',
-          fontSize: large ? 17 : 13, fontWeight: 700,
+          fontSize: featured ? 16 : 12, fontWeight: 700,
           lineHeight: 1.3, letterSpacing: '-0.02em',
-          display: '-webkit-box', WebkitLineClamp: large ? 3 : 2,
+          display: '-webkit-box', WebkitLineClamp: featured ? 3 : 2,
           WebkitBoxOrient: 'vertical', overflow: 'hidden',
         }}>
           {article.title}
@@ -254,7 +248,10 @@ export default function DiscoveryPage({ ctx }) {
         fetchForKeyword(topic.keyword),
         topic.topicId ? fetchTopicHero(topic.topicId) : Promise.resolve([]),
       ])
-      if (articlesRes.status === 'fulfilled') setArticles(articlesRes.value)
+      if (articlesRes.status === 'fulfilled') {
+        const score = a => (a.thumbnail ? 2 : 0) + (a.snippet?.length > 30 ? 1 : 0)
+        setArticles(articlesRes.value.sort((a, b) => (score(b) - score(a)) || ((b.publishedAt || 0) - (a.publishedAt || 0))))
+      }
       if (heroRes.status === 'fulfilled') setHeroArticles(heroRes.value)
     } catch (e) { console.warn('Topic fetch failed:', e) }
     setFetching(false)
@@ -303,7 +300,7 @@ export default function DiscoveryPage({ ctx }) {
         <button className="btn btn-primary" onClick={handleSearch} disabled={fetching || !searchInput.trim()}>
           <SvgIcon id="ico-search" size={15} /> Search
         </button>
-        <button className="btn" onClick={() => openTracker('')}>
+        <button className="btn btn-create" onClick={() => openTracker('')}>
           <SvgIcon id="ico-plus" size={15} /> New Tracker
         </button>
       </div>
@@ -329,15 +326,9 @@ export default function DiscoveryPage({ ctx }) {
 
       {/* Hero section — home feed and topic pages */}
       {heroArticles.length > 0 && (
-        <div className="anim anim-3">
-          {/* Large featured card */}
-          <HeroCard article={heroArticles[0]} large />
-          {/* Row of smaller cards */}
-          {heroArticles.length > 1 && (
-            <div className="hero-sub-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(heroArticles.length - 1, 3)}, 1fr)`, gap: 10, marginTop: 10 }}>
-              {heroArticles.slice(1, 4).map(a => <HeroCard key={a.id} article={a} />)}
-            </div>
-          )}
+        <div className="anim anim-3 hero-bento">
+          <HeroCard article={heroArticles[0]} featured />
+          {heroArticles.slice(1, 4).map(a => <HeroCard key={a.id} article={a} />)}
         </div>
       )}
 

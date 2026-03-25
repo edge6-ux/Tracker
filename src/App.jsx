@@ -57,7 +57,18 @@ function Shell() {
       <div className="tracker-topbar">
         <button className="tracker-topbar-brand" onClick={() => { setShowHome(true); setShowSaved(false); setHomeKey(k => k + 1) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <div className="tracker-topbar-logo">
-            <img src="/tracker1.png" alt="Tracker" style={{ width: 44, height: 44, objectFit: 'contain', display: 'block', filter: 'brightness(0) invert(1)' }} />
+            <div style={{
+              width: 44, height: 44,
+              background: 'var(--accent)',
+              WebkitMaskImage: 'url(/tracker1.png)',
+              WebkitMaskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskImage: 'url(/tracker1.png)',
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'center',
+            }} />
           </div>
           <span className="tracker-topbar-title">Tracker</span>
         </button>
