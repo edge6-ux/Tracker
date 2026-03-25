@@ -202,14 +202,14 @@ function HeroCard({ article, featured }) {
       rel="noopener noreferrer"
       style={{
         position: 'relative', borderRadius: 10, overflow: 'hidden', display: 'block',
-        textDecoration: 'none', height: '100%', minHeight: featured ? 400 : 200,
+        textDecoration: 'none', height: '100%', minHeight: featured ? 240 : 100,
         background: 'var(--bg-hover)', border: '1px solid var(--border)',
       }}
     >
       {!imgFailed && (
         <img
           src={article.thumbnail} alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           onError={() => setImgFailed(true)}
         />
       )}
@@ -358,7 +358,7 @@ export default function DiscoveryPage({ ctx }) {
       {heroArticles.length > 0 && (
         <div className="anim anim-3 hero-bento">
           <HeroCard article={heroArticles[0]} featured />
-          {heroArticles.slice(1, 3).map(a => <HeroCard key={a.id} article={a} />)}
+          {heroArticles.slice(1, 4).map(a => <HeroCard key={a.id} article={a} />)}
         </div>
       )}
 
