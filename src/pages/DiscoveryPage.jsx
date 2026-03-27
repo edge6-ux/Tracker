@@ -177,20 +177,61 @@ async function fetchForKeyword(keyword) {
 }
 
 async function fetchHomeFeed() {
-  const results = await Promise.allSettled(HOME_KEYWORDS.map(fetchForKeyword))
-  const all = []
-  results.forEach(r => { if (r.status === 'fulfilled') all.push(...r.value) })
-  const seen = new Set()
-  const deduped = all.filter(a => {
+  const [googleResults, zhRaw] = await Promise.allSettled([
+    Promise.allSettled(HOME_KEYWORDS.map(fetchForKeyword)),
+    rss2json('https://feeds.feedburner.com/zerohedge/feed'),
+  ])
+
+  // Collect + dedupe Google News articles
+  const gnAll = []
+  if (googleResults.status === 'fulfilled') {
+    googleResults.value.forEach(r => { if (r.status === 'fulfilled') gnAll.push(...r.value) })
+  }
+  const gnSeen = new Set()
+  const gnDeduped = gnAll.filter(a => {
     const k = a.title.toLowerCase().trim()
-    if (seen.has(k)) return false
-    seen.add(k); return true
+    if (gnSeen.has(k)) return false
+    gnSeen.add(k); return true
   })
-  deduped.sort((a, b) => {
-    const score = a => (a.thumbnail ? 2 : 0) + (a.snippet?.length > 30 ? 1 : 0)
-    return (score(b) - score(a)) || ((b.publishedAt || 0) - (a.publishedAt || 0))
-  })
-  return deduped
+  const score = a => (a.thumbnail ? 2 : 0) + (a.snippet?.length > 30 ? 1 : 0)
+  gnDeduped.sort((a, b) => (score(b) - score(a)) || ((b.publishedAt || 0) - (a.publishedAt || 0)))
+
+  // Build ZeroHedge articles from RSS
+  const zhArticles = []
+  if (zhRaw.status === 'fulfilled') {
+    zhRaw.value.slice(0, 20).forEach(item => {
+      if (!item.title) return
+      zhArticles.push({
+        id: 'art-' + Math.random().toString(36).slice(2),
+        title: item.title,
+        source: 'ZeroHedge',
+        snippet: '',
+        url: item.link || '',
+        favicon: 'https://www.google.com/s2/favicons?domain=zerohedge.com&sz=64',
+        thumbnail: '',
+        publishedAt: item.pubDate ? new Date(item.pubDate).getTime() : Date.now(),
+        keyword: 'ZeroHedge',
+      })
+    })
+  }
+
+  // Interleave 2 Google News : 1 ZeroHedge (~33%)
+  const result = []
+  const seen = new Set()
+  let gi = 0, zi = 0
+  while (gi < gnDeduped.length || zi < zhArticles.length) {
+    for (let c = 0; c < 2 && gi < gnDeduped.length; c++, gi++) {
+      const a = gnDeduped[gi]
+      const k = a.title.toLowerCase().trim()
+      if (!seen.has(k)) { seen.add(k); result.push(a) }
+    }
+    if (zi < zhArticles.length) {
+      const a = zhArticles[zi++]
+      const k = a.title.toLowerCase().trim()
+      if (!seen.has(k)) { seen.add(k); result.push(a) }
+    }
+  }
+  return result
 }
 
 function HeroCard({ article, featured }) {

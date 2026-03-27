@@ -252,19 +252,39 @@ export default function TrackerPage({ ctx }) {
     const seen = new Set()
     const deduped = fetchedArticles.filter(a => { const k = a.title.toLowerCase().trim(); if (seen.has(k)) return false; seen.add(k); return true })
 
-    // Round-robin interleave
+    // Group by keyword and sort each group newest-first
     const byKeyword = {}
     deduped.forEach(a => { if (!byKeyword[a.keyword]) byKeyword[a.keyword] = []; byKeyword[a.keyword].push(a) })
     Object.values(byKeyword).forEach(g => g.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0)))
+
+    // Round-robin interleave the non-ZeroHedge keyword groups first
+    const zhGroup = byKeyword['ZeroHedge'] || []
+    const otherKeys = Object.keys(byKeyword).filter(k => k !== 'ZeroHedge')
+    const otherArticles = []
+    const otherIdx = otherKeys.map(() => 0)
+    let hasMore = true
+    while (hasMore) {
+      hasMore = false
+      for (let i = 0; i < otherKeys.length; i++) {
+        const g = byKeyword[otherKeys[i]]
+        if (otherIdx[i] < g.length) { otherArticles.push(g[otherIdx[i]]); otherIdx[i]++; hasMore = true }
+      }
+    }
+
+    // Interleave 2 keyword articles : 1 ZeroHedge (~33%)
     const balanced = []
-    const keys = Object.keys(byKeyword)
-    const indices = keys.map(() => 0)
-    let remaining = true
-    while (remaining) {
-      remaining = false
-      for (let i = 0; i < keys.length; i++) {
-        const group = byKeyword[keys[i]]
-        if (indices[i] < group.length) { balanced.push(group[indices[i]]); indices[i]++; remaining = true }
+    const bSeen = new Set()
+    let oi = 0, zi = 0
+    while (oi < otherArticles.length || zi < zhGroup.length) {
+      for (let c = 0; c < 2 && oi < otherArticles.length; c++, oi++) {
+        const a = otherArticles[oi]
+        const k = a.title.toLowerCase().trim()
+        if (!bSeen.has(k)) { bSeen.add(k); balanced.push(a) }
+      }
+      if (zi < zhGroup.length) {
+        const a = zhGroup[zi++]
+        const k = a.title.toLowerCase().trim()
+        if (!bSeen.has(k)) { bSeen.add(k); balanced.push(a) }
       }
     }
 
